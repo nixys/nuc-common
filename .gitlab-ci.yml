@@ -7,4 +7,4 @@ include:
 variables:
   CHART_PATH: "./"
   HARBOR_REGISTRY: $REGISTRY_NAME
-  HARBOR_PROJECT: "/chartrepo/public/subcharts"
+  HARBOR_PROJECT: "public/subcharts/$CI_PROJECT_NAME"
