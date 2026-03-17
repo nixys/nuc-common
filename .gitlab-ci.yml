@@ -8,3 +8,8 @@ variables:
   CHART_PATH: "./"
   HARBOR_REGISTRY: $REGISTRY_NAME
   HARBOR_PROJECT: "public"
+
+stages:
+  - validate-tag
+  - package
+  - publish
