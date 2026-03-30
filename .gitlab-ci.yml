@@ -20,5 +20,5 @@ stages:
   - publish
 
   - sign
-  - metadata
+  # - metadata
   - verify
