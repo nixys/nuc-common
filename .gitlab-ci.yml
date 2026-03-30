@@ -1,15 +1,24 @@
 include:
-  - project: "apps/nuc-subcharts/gitlab-ci"
-    ref: "main"
+  - project: $CI_INCLUDE_PATH
+    ref: $CI_INCLUDE_REF
+    file:
+      - "/variables-subchart.gitlab-ci.yml"
+
+  - project: $CI_INCLUDE_PATH
+    ref: $CI_INCLUDE_REF
     file:
       - "/publish-subchart.gitlab-ci.yml"
 
-variables:
-  CHART_PATH: "./"
-  HARBOR_REGISTRY: $REGISTRY_NAME
-  HARBOR_PROJECT: "public"
+  - project: $CI_INCLUDE_PATH
+    ref: $CI_INCLUDE_REF
+    file:
+      - "/sign-subchart.gitlab-ci.yml"
 
 stages:
   - validate-tag
   - package
   - publish
+
+  - sign
+  - metadata
+  - verify
