@@ -43,29 +43,29 @@
 {{- range $sName := keys $s | sortAlpha -}}
 {{- $envKeys := get $s $sName -}}
 {{- range $envKey := $envKeys -}}
-{{- if kindIs "string" $envKey -}}
+{{- if kindIs "string" $envKey }}
 - name: {{ $envKey }}
   valueFrom:
     configMapKeyRef:
       name: {{ include "helpers.app.fullname" (dict "name" $sName "context" $ctx) }}
       key: {{ $envKey }}
-{{- else if kindIs "map" $envKey -}}
-{{- range $keyName := keys $envKey | sortAlpha -}}
+{{- else if kindIs "map" $envKey }}
+{{- range $keyName := keys $envKey | sortAlpha }}
 - name: {{ $keyName }}
   valueFrom:
     configMapKeyRef:
       name: {{ include "helpers.app.fullname" (dict "name" $sName "context" $ctx) }}
       key: {{ get $envKey $keyName }}
-{{- end -}}
-{{- end -}}
+{{- end }}
+{{- end }}
 {{- end -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "helpers.configmaps.includeEnvConfigmap" -}}
 {{- $ctx := .context -}}
-{{- range $sName := .value -}}
+{{- range $sName := .value }}
 - configMapRef:
     name: {{ include "helpers.app.fullname" (dict "name" $sName "context" $ctx) }}
-{{- end -}}
+{{- end }}
 {{- end -}}
