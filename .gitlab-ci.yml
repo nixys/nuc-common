@@ -18,7 +18,3 @@ stages:
   - validate-tag
   - package
   - publish
-
-  - sign
-  # - metadata
-  # - verify
