@@ -14,9 +14,6 @@ Please use `volumeMounts` instead.
 
 Option `imagePullSecrets` for workloads is deprecated and will be removed in version `3.0`.
 Please use `extraImagePullSecrets` instead.
-
-Option `servicemonitors` has been renamed to `serviceMonitors` and will be removed in version `3.0`.
-Please use `serviceMonitors` instead.
 {{- end -}}
 
 {{- define "helpers.deprecation.workload.imagePullSecrets" -}}
@@ -44,15 +41,6 @@ You use deprecated option `imagePullSecrets` for cronjob "{{ $name }}". Please u
 
 You use deprecated option `imagePullSecrets` for job "{{ $name }}". Please use `extraImagePullSecrets` instead.
 {{- end }}{{- end }}
-{{- end -}}
-
-{{- define "helpers.deprecation.serviceMonitors" -}}
-{{- if .Values.servicemonitors }}
-
-** WARNING **
-
-You use deprecated option `servicemonitors`. Please use `serviceMonitors` instead.
-{{- end }}
 {{- end -}}
 
 {{- define "helpers.deprecation.extraVolumeMounts" -}}
