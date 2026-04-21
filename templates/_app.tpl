@@ -223,6 +223,93 @@ Order of precedence (later wins):
 {{- end -}}
 
 {{/*
+Render pod/container securityContext with optional generic defaults.
+
+If mergeWithGeneric=true is set on the specific securityContext, generic keys are
+merged first and the specific keys override them. Otherwise the specific value
+replaces the generic default.
+*/}}
+{{- define "helpers.securityContext" -}}
+{{- $ctx := .context -}}
+{{- $specific := .securityContext -}}
+{{- $generic := .genericSecurityContext -}}
+{{- $final := dict -}}
+{{- if and $specific (kindIs "map" $specific) (get $specific "mergeWithGeneric") $generic -}}
+  {{- $final = mergeOverwrite $final ($generic | default dict) (omit $specific "mergeWithGeneric") -}}
+{{- else if $specific -}}
+  {{- if and (kindIs "map" $specific) (hasKey $specific "mergeWithGeneric") -}}
+    {{- $final = omit $specific "mergeWithGeneric" -}}
+  {{- else -}}
+    {{- $final = $specific -}}
+  {{- end -}}
+{{- else if $generic -}}
+  {{- $final = $generic -}}
+{{- end -}}
+{{- if $final }}
+securityContext: {{- include "helpers.tplvalues.render" (dict "value" $final "context" $ctx) | nindent 2 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Render imagePullSecrets for generated ServiceAccounts.
+
+The general and local imagePullSecrets blocks support:
+- includePlatformDefault: bool
+- additional: [{name: regcred}] or ["regcred"]
+
+The local value can also be provided directly as a list for convenience.
+*/}}
+{{- define "helpers.serviceAccounts.imagePullSecrets" -}}
+{{- $ctx := .context -}}
+{{- $general := .general | default dict -}}
+{{- $value := .value | default dict -}}
+{{- $generalConfig := get $general "imagePullSecrets" | default dict -}}
+{{- $valueConfig := get $value "imagePullSecrets" -}}
+{{- $includeDefault := false -}}
+{{- if and (kindIs "map" $generalConfig) (hasKey $generalConfig "includePlatformDefault") -}}
+  {{- $includeDefault = $generalConfig.includePlatformDefault -}}
+{{- end -}}
+{{- if and (kindIs "map" $valueConfig) (hasKey $valueConfig "includePlatformDefault") -}}
+  {{- $includeDefault = $valueConfig.includePlatformDefault -}}
+{{- end -}}
+{{- $items := list -}}
+{{- if and (kindIs "map" $generalConfig) (kindIs "slice" ($generalConfig.additional | default list)) -}}
+  {{- $items = concat $items ($generalConfig.additional | default list) -}}
+{{- end -}}
+{{- if kindIs "slice" $valueConfig -}}
+  {{- $items = concat $items $valueConfig -}}
+{{- else if and (kindIs "map" $valueConfig) (kindIs "slice" ($valueConfig.additional | default list)) -}}
+  {{- $items = concat $items ($valueConfig.additional | default list) -}}
+{{- end -}}
+{{- $names := list -}}
+{{- if and $includeDefault $ctx.Values.serviceAccountDefaultImagePullSecretName -}}
+  {{- $names = append $names $ctx.Values.serviceAccountDefaultImagePullSecretName -}}
+{{- end -}}
+{{- range $item := $items -}}
+  {{- if kindIs "string" $item -}}
+    {{- $names = append $names $item -}}
+  {{- else if and (kindIs "map" $item) (hasKey $item "name") -}}
+    {{- $names = append $names ($item.name | toString) -}}
+  {{- end -}}
+{{- end -}}
+{{- $seen := dict -}}
+{{- $rendered := list -}}
+{{- range $name := $names -}}
+  {{- $resolvedName := include "helpers.tplvalues.render" (dict "value" $name "context" $ctx) -}}
+  {{- if and $resolvedName (not (hasKey $seen $resolvedName)) -}}
+    {{- $_ := set $seen $resolvedName true -}}
+    {{- $rendered = append $rendered (dict "name" $resolvedName) -}}
+  {{- end -}}
+{{- end -}}
+{{- if $rendered }}
+imagePullSecrets:
+{{- range $entry := $rendered }}
+  - name: {{ $entry.name | quote }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Merge pod-level annotations without duplicate keys.
 
 Order of precedence (later wins):
