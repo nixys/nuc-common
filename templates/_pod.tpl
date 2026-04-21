@@ -23,6 +23,11 @@ serviceAccountName: {{ include "helpers.app.fullname" (dict "name" $serviceAccou
 serviceAccountName: {{ $serviceAccountName }}
 {{- end }}
 {{- end }}
+{{- if hasKey . "automountServiceAccountToken" }}
+automountServiceAccountToken: {{ .automountServiceAccountToken }}
+{{- else if and $.Values.generic (hasKey $.Values.generic "automountServiceAccountToken") }}
+automountServiceAccountToken: {{ $.Values.generic.automountServiceAccountToken }}
+{{- end }}
 {{- if .hostAliases }}
 hostAliases: {{- include "helpers.tplvalues.render" (dict "value" .hostAliases "context" $) | nindent 2 }}
 {{- else if $.Values.generic.hostAliases }}
@@ -67,9 +72,7 @@ nodeSelector: {{- include "helpers.tplvalues.render" (dict "value" . "context" $
 tolerations:
 {{ toYaml $combinedTolerations | nindent 2 }}
 {{- end }}
-{{- with .securityContext }}
-securityContext: {{- include "helpers.tplvalues.render" (dict "value" . "context" $) | nindent 2 }}
-{{- end }}
+{{- include "helpers.securityContext" (dict "securityContext" .securityContext "genericSecurityContext" $.Values.generic.podSecurityContext "context" $) }}
 {{- if or $.Values.imagePullSecrets $.Values.generic.extraImagePullSecrets .imagePullSecrets .extraImagePullSecrets }}
 imagePullSecrets:
 {{- range $sName := keys $.Values.imagePullSecrets | sortAlpha }}
@@ -98,9 +101,7 @@ initContainers:
   {{- with (get $container "imageTag") }}{{- $imageTag = include "helpers.tplvalues.render" (dict "value" . "context" $) -}}{{- end }}
   image: {{ $image }}:{{ $imageTag }}
   imagePullPolicy: {{ get $container "imagePullPolicy" | default $.Values.defaultImagePullPolicy }}
-  {{- with (get $container "securityContext") }}
-  securityContext: {{- include "helpers.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
-  {{- end }}
+  {{- include "helpers.securityContext" (dict "securityContext" (get $container "securityContext") "genericSecurityContext" $.Values.generic.containerSecurityContext "context" $) | nindent 2 }}
   {{- if $diagnosticEnabled }}
   args: {{- include "helpers.tplvalues.render" (dict "value" $.Values.diagnosticMode.args "context" $) | nindent 2 }}
   {{- else if (get $container "args") }}
@@ -154,9 +155,7 @@ containers:
   {{- with (get $container "imageTag") }}{{- $imageTag = include "helpers.tplvalues.render" (dict "value" . "context" $) -}}{{- end }}
   image: {{ $image }}:{{ $imageTag }}
   imagePullPolicy: {{ get $container "imagePullPolicy" | default $.Values.defaultImagePullPolicy }}
-  {{- with (get $container "securityContext") }}
-  securityContext: {{- include "helpers.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
-  {{- end }}
+  {{- include "helpers.securityContext" (dict "securityContext" (get $container "securityContext") "genericSecurityContext" $.Values.generic.containerSecurityContext "context" $) | nindent 2 }}
   {{- if $diagnosticEnabled }}
   args: {{- include "helpers.tplvalues.render" (dict "value" $.Values.diagnosticMode.args "context" $) | nindent 2 }}
   {{- else if (get $container "args") }}

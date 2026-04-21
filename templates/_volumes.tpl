@@ -47,6 +47,13 @@
   {{- else }}
   emptyDir: {}
   {{- end }}
+{{- else if eq .type "projected" }}
+- name: {{ .name }}
+  projected:
+    {{- with .defaultMode }}
+    defaultMode: {{ . }}
+    {{- end }}
+    sources: {{- include "helpers.tplvalues.render" (dict "value" (.sources | default list) "context" $ctx) | nindent 6 }}
 {{- end }}
 {{- end -}}
 {{- end -}}
