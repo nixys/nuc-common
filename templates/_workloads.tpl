@@ -29,26 +29,29 @@ env:
 {{- $ctx := .context -}}
 {{- $general := .general | default dict -}}
 {{- $v := .value | default dict -}}
-{{- if or $general.envConfigmaps $v.envConfigmaps $general.envSecrets $v.envSecrets $general.envFrom $v.envFrom -}}
-envFrom:
+{{- $envFrom := "" -}}
 {{- with $general.envConfigmaps }}
-{{ include "helpers.configmaps.includeEnvConfigmap" (dict "value" . "context" $ctx) | nindent 2 }}
+{{- $envFrom = printf "%s\n%s" $envFrom (include "helpers.configmaps.includeEnvConfigmap" (dict "value" . "context" $ctx)) -}}
 {{- end }}
 {{- with $v.envConfigmaps }}
-{{ include "helpers.configmaps.includeEnvConfigmap" (dict "value" . "context" $ctx) | nindent 2 }}
+{{- $envFrom = printf "%s\n%s" $envFrom (include "helpers.configmaps.includeEnvConfigmap" (dict "value" . "context" $ctx)) -}}
 {{- end }}
 {{- with $general.envSecrets }}
-{{ include "helpers.secrets.includeEnvSecret" (dict "value" . "context" $ctx) | nindent 2 }}
+{{- $envFrom = printf "%s\n%s" $envFrom (include "helpers.secrets.includeEnvSecret" (dict "value" . "context" $ctx)) -}}
 {{- end }}
 {{- with $v.envSecrets }}
-{{ include "helpers.secrets.includeEnvSecret" (dict "value" . "context" $ctx) | nindent 2 }}
+{{- $envFrom = printf "%s\n%s" $envFrom (include "helpers.secrets.includeEnvSecret" (dict "value" . "context" $ctx)) -}}
 {{- end }}
 {{- with $general.envFrom }}
-{{ include "helpers.tplvalues.render" (dict "value" . "context" $ctx) | nindent 2 }}
+{{- $envFrom = printf "%s\n%s" $envFrom (include "helpers.tplvalues.render" (dict "value" . "context" $ctx)) -}}
 {{- end }}
 {{- with $v.envFrom }}
-{{ include "helpers.tplvalues.render" (dict "value" . "context" $ctx) | nindent 2 }}
+{{- $envFrom = printf "%s\n%s" $envFrom (include "helpers.tplvalues.render" (dict "value" . "context" $ctx)) -}}
 {{- end }}
+{{- $envFrom = trim $envFrom -}}
+{{- if $envFrom }}
+envFrom:
+{{ $envFrom | nindent 2 }}
 {{- end -}}
 {{- end -}}
 

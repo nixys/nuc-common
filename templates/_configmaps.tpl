@@ -64,8 +64,13 @@
 
 {{- define "helpers.configmaps.includeEnvConfigmap" -}}
 {{- $ctx := .context -}}
-{{- range $sName := .value }}
+{{- range $sName := (.value | default list) }}
+{{- if and (kindIs "string" $sName) $sName }}
+{{- $resolvedName := include "helpers.tplvalues.render" (dict "value" $sName "context" $ctx) -}}
+{{- if $resolvedName }}
 - configMapRef:
-    name: {{ include "helpers.app.fullname" (dict "name" $sName "context" $ctx) }}
+    name: {{ include "helpers.app.fullname" (dict "name" $resolvedName "context" $ctx) }}
+{{- end }}
+{{- end }}
 {{- end }}
 {{- end -}}

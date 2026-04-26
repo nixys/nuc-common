@@ -45,6 +45,14 @@ The library exposes merged annotation helpers to keep rendered manifests determi
 - If a specific `securityContext` sets `mergeWithGeneric: true`, generic keys are merged first and the specific keys override them.
 - Otherwise, a specific `securityContext` replaces the generic default.
 
+## Workload envFrom helpers
+
+`helpers.workloads.envsFrom` renders `envFrom` entries from `envConfigmaps`, `envSecrets`, and raw `envFrom` values defined on a container or workload-family general defaults object.
+
+- Multiple `envConfigmaps` and `envSecrets` entries are preserved in order.
+- Empty strings and `null` items are skipped.
+- If no valid entries remain, the `envFrom` block is omitted.
+
 ## ServiceAccount imagePullSecrets
 
 `helpers.serviceAccounts.imagePullSecrets` renders generated `ServiceAccount.imagePullSecrets` from:
