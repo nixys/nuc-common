@@ -4,7 +4,7 @@
 {{- if eq .type "configMap" }}
 - name: {{ .name }}
   configMap:
-    {{- with .originalName }}
+    {{- with (.configMapName | default .originalName) }}
     name: {{ . }}
     {{- else }}
     name: {{ include "helpers.app.fullname" (dict "name" .name "context" $ctx) }}
@@ -18,7 +18,7 @@
 {{- else if eq .type "secret" }}
 - name: {{ .name }}
   secret:
-    {{- with .originalName }}
+    {{- with (.secretName | default .originalName) }}
     secretName: {{ . }}
     {{- else }}
     secretName: {{ include "helpers.app.fullname" (dict "name" .name "context" $ctx) }}
@@ -29,7 +29,7 @@
 {{- else if eq .type "pvc" }}
 - name: {{ .name }}
   persistentVolumeClaim:
-    {{- with .originalName }}
+    {{- with (.claimName | default .originalName) }}
     claimName: {{ . }}
     {{- else }}
     claimName: {{ include "helpers.app.fullname" (dict "name" .name "context" $ctx) }}
