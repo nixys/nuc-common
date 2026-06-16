@@ -19,8 +19,28 @@ env:
 {{- with $general.env }}
 {{ include "helpers.tplvalues.render" (dict "value" . "context" $ctx) | nindent 2 }}
 {{- end }}
-{{- with $v.env }}
-{{ include "helpers.tplvalues.render" (dict "value" . "context" $ctx) | nindent 2 }}
+
+{{- /* --- Process Workload-specific Env ($v.env) --- */ -}}
+{{- if $v.env }}
+  {{- if or (kindIs "slice" $v.env) (hasPrefix "-" (trim (include "helpers.tplvalues.render" (dict "value" $v.env "context" $ctx)))) }}
+    {{- /* Scenario 1: Array List Pass-through (kept verbatim) */ -}}
+    {{ include "helpers.tplvalues.render" (dict "value" $v.env "context" $ctx) | nindent 2 }}
+  {{- else }}
+    {{- /* Scenario 2: Map layout with explicit null/empty deletion filter */ -}}
+    {{- $renderedWorkloadEnv := include "helpers.tplvalues.render" (dict "value" $v.env "context" $ctx) | fromYaml -}}
+    {{- range $key, $val := $renderedWorkloadEnv }}
+      {{- $valType := typeOf $val }}
+      {{- /* Safe evaluation: Skip if the type is explicitly a '<nil>' string or an empty text field */ -}}
+      {{- if and (ne $valType "<nil>") (not (and (eq $valType "string") (eq $val ""))) }}
+  - name: {{ $key | quote }}
+        {{- if kindIs "map" $val }}
+{{ toYaml $val | nindent 4 }}
+        {{- else }}
+    value: {{ $val | quote }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
 {{- end }}
 {{- end -}}
 {{- end -}}
