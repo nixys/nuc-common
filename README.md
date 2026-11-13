@@ -2,6 +2,12 @@
 
 `nuc-common` is the shared Helm library chart used by `nxs-universal-chart` and related charts.
 
+## Selector Labels
+
+`helpers.app.selectorLabels` renders `app.kubernetes.io/name`, `app.kubernetes.io/instance`, and templated `generic.extraSelectorLabels`. Set `generic.useDefaultSelectorLabels: false` to omit the first two labels. `helpers.app.labels` always includes them.
+
+`helpers.app.matchLabels` merges resource-level labels (`value`) over `helpers.app.selectorLabels` and fails when the result is empty; `resource` names the resource in the error message. `helpers.app.podSelectorLabels` renders the same labels for pod templates and always includes the standard labels. Pod affinity presets also fail on an empty selector. In all helpers, `extraSelectorLabels` keys override standard label values instead of duplicating them.
+
 ## Annotation Helpers
 
 The library exposes merged annotation helpers to keep rendered manifests deterministic and avoid duplicate YAML keys:

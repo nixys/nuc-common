@@ -58,13 +58,13 @@ requiredDuringSchedulingIgnoredDuringExecution:
 {{- end -}}
 
 {{- define "helpers.affinities.pods.labelSelector" -}}
-{{- $extraLabels := default dict .extraLabels -}}
+{{- $labels := merge (dict) (default dict .extraLabels) (include "helpers.app.selectorLabels" .context | fromYaml) -}}
+{{- if not $labels -}}
+{{- fail "pod affinity preset: selector is empty, set generic.extraSelectorLabels when generic.useDefaultSelectorLabels is false" -}}
+{{- end -}}
 labelSelector:
   matchLabels:
-    {{- include "helpers.app.selectorLabels" .context | nindent 4 }}
-    {{- with $extraLabels }}
-{{ toYaml . | nindent 4 }}
-    {{- end }}
+    {{- toYaml $labels | nindent 4 }}
 namespaces:
   - {{ .context.Release.Namespace | quote }}
 topologyKey: kubernetes.io/hostname
