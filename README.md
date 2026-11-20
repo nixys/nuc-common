@@ -54,7 +54,7 @@ The library exposes merged annotation helpers to keep rendered manifests determi
 - A `null` value is skipped, so a later values file can drop a variable.
 - A key is rendered with `tpl` when it contains `{{`. Rendering fails if the name is empty or two keys of the map render to the same name.
 - Map entries are sorted by key in byte order before `tpl`. If no entries remain, the `env` block is omitted.
-- When both the general defaults and the container `env` are maps, they are merged by key: the container value replaces the general one, and `null` in the container removes it. When either is a list, general entries are rendered before container entries.
+- When both the general defaults and the container `env` are maps, they are merged by raw key, before `tpl`: the container value replaces the general one, and `null` in the container removes it. General keys are rendered first, then keys set only in the container, each group sorted, so a container value can reference a general variable with `$(VAR)`. When either is a list, general entries are rendered before container entries without merging.
 
 `helpers.workloads.envsFrom` renders `envFrom` entries from `envConfigmaps`, `envSecrets`, and raw `envFrom` values defined on a container or workload-family general defaults object.
 
