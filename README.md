@@ -45,7 +45,14 @@ The library exposes merged annotation helpers to keep rendered manifests determi
 - If a specific `securityContext` sets `mergeWithGeneric: true`, generic keys are merged first and the specific keys override them.
 - Otherwise, a specific `securityContext` replaces the generic default.
 
-## Workload envFrom helpers
+## Workload env helpers
+
+`helpers.workloads.envs` renders `env` entries from `envsFromConfigmap`, `envsFromSecret`, and `env` values defined on a container or workload-family general defaults object. `env` accepts a native Kubernetes list or a map keyed by variable name:
+
+- A string value is rendered with `tpl` as `value`; an empty string is kept.
+- An object value, such as `{valueFrom: {fieldRef: {fieldPath: metadata.name}}}`, is rendered under the variable name.
+- A `null` value is skipped, so a later values file can drop a variable.
+- Map entries are rendered in variable name order. If no entries remain, the `env` block is omitted.
 
 `helpers.workloads.envsFrom` renders `envFrom` entries from `envConfigmaps`, `envSecrets`, and raw `envFrom` values defined on a container or workload-family general defaults object.
 
